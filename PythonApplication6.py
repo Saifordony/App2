@@ -98,7 +98,6 @@ def extract_pdf_text(file):
 def analyze_contract(text):
     word_count = len(text.split())
     summary = text[:300]
-    health = "Healthy" if word_count > 200 else "Unhealthy"
     return {
         "word_count": word_count,
         "summary": summary
@@ -158,12 +157,21 @@ def admin_panel():
 # Main App Flow
 # ------------------------------
 def main():
-    col_logout = st.columns([10, 1])
-    with col_logout[1]:
-        if st.button("🚪 Logout"):
+    st.markdown("""
+        <div style='display: flex; justify-content: space-between; align-items: center;'>
+            <h1 style='margin: 0;'>🤖 Contract Evaluation App</h1>
+            <form action="#" method="post">
+                <button onclick="window.location.reload();" style='background-color: #e50914; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer;'>🚪 Logout</button>
+            </form>
+        </div>
+        <hr style='margin-top: 1rem; margin-bottom: 1.5rem; border: none; height: 2px; background: #e50914;'>
+    """, unsafe_allow_html=True)
+
+    if st.button("", key="logout_button_hidden", help="Hidden logout button", disabled=True):
+        st.session_state.clear()
+        st.experimental_rerun()
             st.session_state.clear()
             st.experimental_rerun()
-
     st.markdown("# 🤖 Contract Evaluation App")
 
     if st.session_state["username"] == "admin":
@@ -183,26 +191,18 @@ def main():
                     time.sleep(1.5)
                     text = extract_pdf_text(uploaded_file)
                     st.session_state["analysis_result"] = analyze_contract(text)
-                    st.session_state["evaluation_done"] = False
                 st.success("Analysis complete.")
 
         if "analysis_result" in st.session_state:
-            result = st.session_state["analysis_result"]
-
             st.subheader("🧾 Analysis Summary")
+            result = st.session_state["analysis_result"]
             st.write(f"**Word Count:** {result['word_count']}")
             st.write(f"**Summary Preview:** {result['summary']}...")
 
-            if "evaluation_done" not in st.session_state:
-                st.session_state["evaluation_done"] = False
-
-            if not st.session_state["evaluation_done"]:
-                if st.button("✅ Evaluate Contract"):
-                    st.session_state["evaluation_done"] = True
-                    st.rerun()
-
-            if st.session_state["evaluation_done"]:
-                health = result["contract_health"]
+            if st.button("✅ Evaluate Contract"):
+                word_count = result["word_count"]
+                health = "Healthy" if word_count > 200 else "Unhealthy"
+                result["contract_health"] = health
                 icon = "✅" if health == "Healthy" else "❌"
                 color = "green" if health == "Healthy" else "red"
                 message = (
