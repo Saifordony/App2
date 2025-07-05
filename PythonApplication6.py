@@ -167,11 +167,9 @@ def main():
         <hr style='margin-top: 1rem; margin-bottom: 1.5rem; border: none; height: 2px; background: #e50914;'>
     """, unsafe_allow_html=True)
 
-    if st.button("", key="logout_button_hidden", help="Hidden logout button", disabled=True):
+    if st.button("🚪 Logout", key="logout_button"):
         st.session_state.clear()
         st.experimental_rerun()
-            st.session_state.clear()
-            st.experimental_rerun()
     st.markdown("# 🤖 Contract Evaluation App")
 
     if st.session_state["username"] == "admin":
