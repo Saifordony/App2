@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import json
 import os
 from datetime import datetime, timedelta
@@ -159,6 +159,12 @@ def admin_panel():
 # Main App Flow
 # ------------------------------
 def main():
+    col_logout = st.columns([10, 1])
+    with col_logout[1]:
+        if st.button("🚪 Logout"):
+            st.session_state.clear()
+            st.experimental_rerun()
+
     st.markdown("# 🤖 Contract Evaluation App")
 
     if st.session_state["username"] == "admin":
@@ -178,14 +184,50 @@ def main():
                     time.sleep(1.5)
                     text = extract_pdf_text(uploaded_file)
                     st.session_state["analysis_result"] = analyze_contract(text)
+                    st.session_state["evaluation_done"] = False
                 st.success("Analysis complete.")
 
         if "analysis_result" in st.session_state:
-            st.json(st.session_state["analysis_result"])
+            result = st.session_state["analysis_result"]
 
-            if st.button("✅ Evaluate Contract"):
-                result = st.session_state["analysis_result"]
-                st.markdown(f"### 🩺 Contract Health: **{result['contract_health']}**")
+            st.subheader("🧾 Analysis Summary")
+            st.write(f"**Word Count:** {result['word_count']}")
+            st.write(f"**Summary Preview:** {result['summary']}...")
+
+            if "evaluation_done" not in st.session_state:
+                st.session_state["evaluation_done"] = False
+
+            if not st.session_state["evaluation_done"]:
+                if st.button("✅ Evaluate Contract"):
+                    st.session_state["evaluation_done"] = True
+                    st.rerun()
+
+            if st.session_state["evaluation_done"]:
+                health = result["contract_health"]
+                icon = "✅" if health == "Healthy" else "❌"
+                color = "green" if health == "Healthy" else "red"
+                message = (
+                    "The contract appears to be comprehensive. No immediate red flags detected."
+                    if health == "Healthy"
+                    else "The contract may lack important clauses. Review is recommended."
+                )
+
+                st.markdown(
+                    f"""
+                    <div style='
+                        border: 1px solid {color};
+                        background-color: #fefefe;
+                        padding: 1rem;
+                        border-radius: 10px;
+                        margin-top: 1rem;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                    '>
+                        <h4 style='color:{color}; margin-bottom: 0.5rem;'>{icon} Contract Health: <strong>{health}</strong></h4>
+                        <p style='color:#444;'>{message}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
                 if st.button("💾 Save Evaluation"):
                     filename = save_analysis(st.session_state["username"], result)
@@ -230,6 +272,3 @@ if not st.session_state["authenticated"]:
         signup()
 else:
     main()
-
-
-
