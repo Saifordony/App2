@@ -101,8 +101,7 @@ def analyze_contract(text):
     health = "Healthy" if word_count > 200 else "Unhealthy"
     return {
         "word_count": word_count,
-        "summary": summary,
-        "contract_health": health
+        "summary": summary
     }
 
 # ------------------------------
