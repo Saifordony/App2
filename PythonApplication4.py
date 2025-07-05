@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import PyPDF2
 
 # ------------------------------
@@ -15,6 +15,7 @@ def login():
         if username and password:
             st.session_state["authenticated"] = True
             st.session_state["username"] = username
+            st.session_state["session_start"] = datetime.now()
             st.success("Logged in successfully!")
         else:
             st.error("Please enter both username and password")
@@ -27,6 +28,7 @@ def signup():
         if new_username and new_password:
             st.session_state["authenticated"] = True
             st.session_state["username"] = new_username
+            st.session_state["session_start"] = datetime.now()
             st.success("Account created and logged in!")
         else:
             st.error("Please enter both a username and password")
@@ -85,6 +87,15 @@ def admin_panel():
     users = set(f.split("_")[0] for f in files)
     st.metric("Total Contracts Evaluated", len(files))
     st.metric("Total Users", len(users))
+
+    # Mock session log display
+    st.subheader("Session Logs")
+    st.write("These are mock logs. Actual logging will be implemented via API.")
+    st.json([
+        {"username": "user1", "login_time": "2024-07-05 09:00:00", "session_length": "15 min"},
+        {"username": "user2", "login_time": "2024-07-05 09:20:00", "session_length": "23 min"},
+        {"username": "admin", "login_time": "2024-07-05 10:00:00", "session_length": "35 min"}
+    ])
 
     st.subheader("All Evaluated Contracts")
     for user in users:
